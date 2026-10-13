@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Student Panel Sidebar (faithfully styled to design) -->
+    <div class="col-md-3 mb-4">
+        <div class="student-sidebar-card shadow-sm">
+            <div class="student-sidebar-header">
+                <i class="fa-solid fa-graduation-cap"></i> Student Panel
+            </div>
+            <div class="list-group list-group-flush student-sidebar">
+                <a href="{{ url_for('student_dashboard') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="{{ url_for('student_internship') }}" class="list-group-item list-group-item-action {% if request.endpoint in ['student_internship', 'new_internship'] %}active{% endif %}">
+                    <i class="fa-solid fa-briefcase"></i> My Internship
+                </a>
+                <a href="{{ url_for('student_documents') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_documents' %}active{% endif %}">
+                    <i class="fa-solid fa-folder-open"></i> My Documents
+                </a>
+                <a href="{{ url_for('student_progress') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_progress' %}active{% endif %}">
+                    <i class="fa-solid fa-tasks"></i> Internship Progress
+                </a>
+                <a href="{{ url_for('student_feedback') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_feedback' %}active{% endif %}">
+                    <i class="fa-solid fa-comment-dots"></i> Manager Feedback
+                </a>
+                <a href="{{ url_for('student_completion') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_completion' %}active{% endif %}">
+                    <i class="fa-solid fa-award"></i> Final Evaluation
+                </a>
+                <a href="{{ url_for('student_events') }}" class="list-group-item list-group-item-action {% if request.endpoint in ['student_events', 'view_student_event'] %}active{% endif %}">
+                    <i class="fa-solid fa-bullhorn"></i> Events & Drives
+                    <span class="badge bg-primary ms-auto" style="font-size: 0.7rem;">Live</span>
+                </a>
+                <a href="{{ url_for('student_notifications') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_notifications' %}active{% endif %}">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                </a>
+                <a href="{{ url_for('student_profile') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'student_profile' %}active{% endif %}">
+                    <i class="fa-solid fa-user"></i> My Profile
+                </a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action item-logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="col-md-9">
+        {% block student_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

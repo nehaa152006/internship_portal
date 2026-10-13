@@ -1,0 +1,158 @@
+{% extends "student_base.html" %}
+{% block title %}My Documents | T&P Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <h3 class="fw-bold mb-1">My Internship Documents</h3>
+    <p class="text-muted mb-0">Upload and verify mandatory internship documents required by the Training & Placement section.</p>
+</div>
+
+{% if not internship %}
+<div class="alert alert-info">
+    <i class="fa-solid fa-circle-info me-2"></i> Please <a href="{{ url_for('student_internship') }}" class="alert-link">add your internship details</a> first before uploading documents.
+</div>
+{% else %}
+
+<div class="row g-4">
+    <!-- 1. Offer / Approval Letter -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="rounded-circle bg-primary-subtle p-3 text-primary">
+                        <i class="fa-solid fa-file-contract fs-4"></i>
+                    </div>
+                    {% if internship.letter_status == 'Submitted' %}
+                        <span class="badge bg-success">Uploaded & Submitted</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Pending Upload</span>
+                    {% endif %}
+                </div>
+                <h5 class="fw-bold">1. Offer / Approval Letter</h5>
+                <p class="text-muted small">Official offer letter from {{ internship.company_name }} or NOC approval from T&P.</p>
+                
+                <div class="mt-auto">
+                    {% if internship.letter_filename %}
+                        <div class="p-2 bg-light rounded mb-3 small text-truncate">
+                            <i class="fa-solid fa-paperclip text-secondary me-1"></i> {{ internship.letter_filename }}
+                        </div>
+                        <a href="{{ url_for('uploaded_letter', filename=internship.letter_filename) }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            <i class="fa-solid fa-eye me-1"></i> View / Download
+                        </a>
+                    {% endif %}
+
+                    <!-- Upload Form -->
+                    <button class="btn btn-sm {% if internship.letter_filename %}btn-light border{% else %}btn-primary{% endif %} w-100" type="button" data-bs-toggle="collapse" data-bs-target="#uploadOfferLetter">
+                        <i class="fa-solid fa-upload me-1"></i> {% if internship.letter_filename %}Replace Document{% else %}Upload Letter{% endif %}
+                    </button>
+                    
+                    <div class="collapse mt-2" id="uploadOfferLetter">
+                        <form method="POST" action="{{ url_for('student_upload_document', doc_type='letter') }}" enctype="multipart/form-data" class="p-2 border rounded bg-white">
+                            <input type="file" name="doc_file" class="form-control form-control-sm mb-2" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <button type="submit" class="btn btn-sm btn-primary w-100">Confirm Upload</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Completion Certificate -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="rounded-circle bg-success-subtle p-3 text-success">
+                        <i class="fa-solid fa-certificate fs-4"></i>
+                    </div>
+                    {% if internship.completion_status == 'Uploaded' %}
+                        <span class="badge bg-success">Uploaded</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Not Uploaded</span>
+                    {% endif %}
+                </div>
+                <h5 class="fw-bold">2. Completion Certificate</h5>
+                <p class="text-muted small">Signed letter from industry supervisor confirming successful completion of internship duration.</p>
+                
+                <div class="mt-auto">
+                    {% if internship.completion_filename %}
+                        <div class="p-2 bg-light rounded mb-3 small text-truncate">
+                            <i class="fa-solid fa-paperclip text-secondary me-1"></i> {{ internship.completion_filename }}
+                        </div>
+                        <a href="{{ url_for('uploaded_completion', filename=internship.completion_filename) }}" target="_blank" class="btn btn-outline-success btn-sm w-100 mb-2">
+                            <i class="fa-solid fa-eye me-1"></i> View / Download
+                        </a>
+                    {% endif %}
+
+                    <button class="btn btn-sm {% if internship.completion_filename %}btn-light border{% else %}btn-primary{% endif %} w-100" type="button" data-bs-toggle="collapse" data-bs-target="#uploadCompletion">
+                        <i class="fa-solid fa-upload me-1"></i> {% if internship.completion_filename %}Replace Document{% else %}Upload Certificate{% endif %}
+                    </button>
+                    
+                    <div class="collapse mt-2" id="uploadCompletion">
+                        <form method="POST" action="{{ url_for('student_upload_document', doc_type='completion') }}" enctype="multipart/form-data" class="p-2 border rounded bg-white">
+                            <input type="file" name="doc_file" class="form-control form-control-sm mb-2" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <button type="submit" class="btn btn-sm btn-success w-100">Confirm Upload</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Final Project Report -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="rounded-circle bg-info-subtle p-3 text-info">
+                        <i class="fa-solid fa-book fs-4"></i>
+                    </div>
+                    {% if internship.report_status == 'Uploaded' %}
+                        <span class="badge bg-success">Uploaded</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Not Uploaded</span>
+                    {% endif %}
+                </div>
+                <h5 class="fw-bold">3. Internship Report</h5>
+                <p class="text-muted small">Detailed project report covering problem statement, tech stack, deliverables, and learnings.</p>
+                
+                <div class="mt-auto">
+                    {% if internship.report_filename %}
+                        <div class="p-2 bg-light rounded mb-3 small text-truncate">
+                            <i class="fa-solid fa-paperclip text-secondary me-1"></i> {{ internship.report_filename }}
+                        </div>
+                        <a href="{{ url_for('uploaded_report', filename=internship.report_filename) }}" target="_blank" class="btn btn-outline-info btn-sm w-100 mb-2">
+                            <i class="fa-solid fa-eye me-1"></i> View / Download
+                        </a>
+                    {% endif %}
+
+                    <button class="btn btn-sm {% if internship.report_filename %}btn-light border{% else %}btn-primary{% endif %} w-100" type="button" data-bs-toggle="collapse" data-bs-target="#uploadReport">
+                        <i class="fa-solid fa-upload me-1"></i> {% if internship.report_filename %}Replace Document{% else %}Upload Report{% endif %}
+                    </button>
+                    
+                    <div class="collapse mt-2" id="uploadReport">
+                        <form method="POST" action="{{ url_for('student_upload_document', doc_type='report') }}" enctype="multipart/form-data" class="p-2 border rounded bg-white">
+                            <input type="file" name="doc_file" class="form-control form-control-sm mb-2" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <button type="submit" class="btn btn-sm btn-info text-white w-100">Confirm Upload</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Guidelines Card -->
+<div class="card shadow-sm border-0 mt-4 bg-white">
+    <div class="card-body">
+        <h6 class="fw-bold"><i class="fa-solid fa-lightbulb text-warning me-2"></i>University Document Submission Guidelines</h6>
+        <ul class="text-muted small mb-0 ps-3">
+            <li>Accepted file formats are PDF, JPG, and PNG (maximum file size 10MB).</li>
+            <li>Offer letters must contain official company letterhead, supervisor name/signature, and clear start/end dates.</li>
+            <li>Completion certificates are required before academic credits and NOC clearance are granted.</li>
+            <li>Make sure all scans are crisp and legible before uploading.</li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

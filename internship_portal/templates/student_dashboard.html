@@ -1,0 +1,291 @@
+{% extends "student_base.html" %}
+{% block title %}Student Dashboard | T&P Portal{% endblock %}
+
+{% block student_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold mb-1">Student Dashboard</h3>
+        <p class="text-muted mb-0 small">Overview of your internship verification, placement drives, and scheduled interviews.</p>
+    </div>
+    {% if not internship %}
+    <a href="{{ url_for('student_internship') }}" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-plus me-1"></i> Register Internship
+    </a>
+    {% endif %}
+</div>
+
+<!-- SHORTLISTED INTERVIEWS ALERT (WHEN & WHERE PROMINENTLY SHOWN) -->
+{% if shortlisted_interviews %}
+{% for si in shortlisted_interviews %}
+<div class="card border-0 mb-4 interview-banner text-white">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+            <div>
+                <span class="badge bg-warning text-dark px-2 py-1 mb-2 fw-bold">
+                    <i class="fa-solid fa-star me-1"></i>Action Required: Shortlisted for Interview!
+                </span>
+                <h4 class="fw-bold mb-1">{{ si.event_title }}</h4>
+                <p class="mb-0 small opacity-90"><i class="fa-solid fa-building me-1"></i>{{ si.company_name }} &bull; Role: {{ si.role or 'Intern' }}</p>
+            </div>
+            <div class="mt-2 mt-md-0">
+                <a href="{{ url_for('student_events') }}#event-{{ si.event_id }}" class="btn btn-light text-primary btn-sm fw-bold">
+                    View Drive Details &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="p-3 bg-white text-dark rounded shadow-sm">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <span class="text-muted d-block small fw-bold text-uppercase">📅 When (Interview Date & Time)</span>
+                    <strong class="fs-6 text-primary">
+                        {{ si.interview_date or 'Date to be announced soon' }}
+                        {% if si.interview_time %}&bull; {{ si.interview_time }}{% endif %}
+                    </strong>
+                </div>
+                <div class="col-md-5">
+                    <span class="text-muted d-block small fw-bold text-uppercase">📍 Where (Venue / Link)</span>
+                    <div class="fs-6">
+                        {% if si.interview_venue and (si.interview_venue.startswith('http://') or si.interview_venue.startswith('https://')) %}
+                            <a href="{{ si.interview_venue }}" target="_blank" class="btn btn-sm btn-primary py-0 px-2 mt-1">
+                                <i class="fa-solid fa-video me-1"></i> Join Online Interview
+                            </a>
+                        {% else %}
+                            <strong class="text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i>{{ si.interview_venue or 'Venue details will be notified by T&P' }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2 text-md-end">
+                    <span class="text-muted d-block small fw-bold text-uppercase">Status</span>
+                    <span class="badge bg-success text-white">Shortlisted</span>
+                </div>
+                {% if si.interview_instructions %}
+                <div class="col-12 pt-2 border-top">
+                    <span class="text-muted d-block small fw-bold">📋 Specific Instructions:</span>
+                    <p class="small text-secondary mb-0">{{ si.interview_instructions }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Quick Metric Badges Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center h-100 shadow-sm border-0">
+            <div class="card-body py-3">
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Verification</small>
+                <div class="mt-2">
+                    {% if internship %}
+                        <span class="badge {% if internship.review_status == 'Approved' %}bg-success{% elif internship.review_status == 'Correction Required' %}bg-warning text-dark{% elif internship.review_status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                            {{ internship.review_status }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-light text-muted border">Not Started</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100 shadow-sm border-0">
+            <div class="card-body py-3">
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Internship State</small>
+                <div class="mt-2">
+                    {% if internship %}
+                        <span class="badge {% if internship.review_status == 'Completed' %}bg-primary{% elif internship.review_status == 'Ongoing' %}bg-info text-dark{% else %}bg-light text-dark border{% endif %}">
+                            {% if internship.review_status in ['Ongoing', 'Completed'] %}{{ internship.review_status }}{% else %}Pending Start{% endif %}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-light text-muted border">-</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100 shadow-sm border-0">
+            <div class="card-body py-3">
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Docs Submitted</small>
+                <div class="mt-2">
+                    {% set docs = 0 %}
+                    {% if internship %}
+                        {% if internship.letter_filename %}{% set docs = docs + 1 %}{% endif %}
+                        {% if internship.completion_filename %}{% set docs = docs + 1 %}{% endif %}
+                        {% if internship.report_filename %}{% set docs = docs + 1 %}{% endif %}
+                    {% endif %}
+                    <span class="fw-bold text-primary">{{ docs }} / 3</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100 shadow-sm border-0">
+            <div class="card-body py-3">
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Evaluation</small>
+                <div class="mt-2">
+                    {% if internship and internship.feedback_rating %}
+                        <span class="badge bg-success"><i class="fa-solid fa-star text-warning me-1"></i>{{ internship.feedback_rating }}/5.0</span>
+                    {% else %}
+                        <span class="badge bg-light text-muted border">Pending</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if internship %}
+<!-- Current Internship Card -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-1 text-primary">
+                    <i class="fa-solid fa-building me-2"></i>{{ internship.company_name }}
+                </h5>
+                <span class="text-muted small"><i class="fa-solid fa-user-tie me-1"></i>{{ internship.role or 'Intern' }} &bull; {{ internship.mode or 'Offline' }} &bull; {{ internship.internship_type or 'Paid' }}</span>
+            </div>
+            <div class="mt-2 mt-md-0">
+                <a href="{{ url_for('student_internship') }}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="fa-solid fa-eye me-1"></i> View Details
+                </a>
+                <a href="{{ url_for('student_documents') }}" class="btn btn-sm btn-primary">
+                    <i class="fa-solid fa-file-arrow-up me-1"></i> Manage Documents
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-2 mt-2 pt-2 border-top small">
+            <div class="col-sm-4">
+                <span class="text-muted d-block">Duration</span>
+                <strong>{{ internship.start_date or 'TBD' }} to {{ internship.end_date or 'TBD' }}</strong>
+            </div>
+            <div class="col-sm-4">
+                <span class="text-muted d-block">Location / Domain</span>
+                <strong>{{ internship.company_location or 'N/A' }} ({{ internship.domain or 'General' }})</strong>
+            </div>
+            <div class="col-sm-4">
+                <span class="text-muted d-block">Verification Status</span>
+                <span class="badge {% if internship.review_status == 'Approved' %}bg-success{% elif internship.review_status == 'Correction Required' %}bg-warning text-dark{% elif internship.review_status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                    {{ internship.review_status }}
+                </span>
+            </div>
+        </div>
+        
+        {% if internship.review_status == 'Correction Required' and internship.admin_remarks %}
+        <div class="alert alert-warning d-flex align-items-center mt-3 mb-0" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-3 fs-4 text-warning"></i>
+            <div>
+                <strong>Correction Required by T&P Section:</strong><br>
+                {{ internship.admin_remarks }}
+                <div class="mt-2">
+                    <a href="{{ url_for('student_internship', edit='1') }}" class="btn btn-sm btn-warning">Update Internship Details & Resubmit</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Roadmap Timeline -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0"><i class="fa-solid fa-timeline me-2 text-primary"></i>Internship Roadmap</h6>
+            <a href="{{ url_for('student_progress') }}" class="small text-decoration-none">Full Lifecycle &rarr;</a>
+        </div>
+        
+        <div class="position-relative my-4">
+            <div class="progress" style="height: 3px;">
+                {% set p = 10 %}
+                {% if internship.submission_status == 'Submitted' %}{% set p = 30 %}{% endif %}
+                {% if internship.review_status in ['Approved', 'Ongoing', 'Completed'] %}{% set p = 55 %}{% endif %}
+                {% if internship.review_status in ['Ongoing', 'Completed'] %}{% set p = 80 %}{% endif %}
+                {% if internship.review_status == 'Completed' %}{% set p = 100 %}{% endif %}
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ p }}%;"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between position-absolute w-100" style="top: -12px;">
+                <span class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;"><i class="fa-solid fa-check fs-7"></i></span>
+                <span class="{% if p >= 30 %}bg-primary text-white{% else %}bg-white text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;"><i class="fa-solid {% if p >= 30 %}fa-check{% else %}fa-paper-plane{% endif %} fs-7"></i></span>
+                <span class="{% if p >= 55 %}bg-primary text-white{% else %}bg-white text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;"><i class="fa-solid {% if p >= 55 %}fa-check{% else %}fa-user-check{% endif %} fs-7"></i></span>
+                <span class="{% if p >= 80 %}bg-primary text-white{% else %}bg-white text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;"><i class="fa-solid {% if p >= 80 %}fa-check{% else %}fa-briefcase{% endif %} fs-7"></i></span>
+                <span class="{% if p == 100 %}bg-primary text-white{% else %}bg-white text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;"><i class="fa-solid {% if p == 100 %}fa-check{% else %}fa-award{% endif %} fs-7"></i></span>
+            </div>
+            
+            <div class="d-flex justify-content-between position-absolute w-100 mt-4 text-center fw-semibold text-secondary" style="font-size: 0.75rem;">
+                <span style="width: 60px; margin-left: -17px;">Added</span>
+                <span style="width: 60px; margin-left: -17px;">Submitted</span>
+                <span style="width: 60px; margin-left: -17px;">Verified</span>
+                <span style="width: 60px; margin-left: -17px;">Ongoing</span>
+                <span style="width: 60px; margin-left: -17px;">Completed</span>
+            </div>
+        </div>
+        <div style="height: 30px;"></div>
+    </div>
+</div>
+{% endif %}
+
+<!-- PUSHED DRIVES SECTION -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+        <div>
+            <h6 class="mb-0 fw-bold">
+                <i class="fa-solid fa-bullhorn text-primary me-2"></i>Campus Placement & Internship Drives
+            </h6>
+            <small class="text-muted">Opportunities pushed directly by the University T&P Section</small>
+        </div>
+        <a href="{{ url_for('student_events') }}" class="btn btn-sm btn-outline-primary">
+            View All &rarr;
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if events %}
+        <div class="list-group list-group-flush">
+            {% for ev in events %}
+            <div class="list-group-item p-3 d-flex flex-wrap justify-content-between align-items-center">
+                <div class="me-3">
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-2">{{ ev.event_type }}</span>
+                        <h6 class="mb-0 fw-bold">{{ ev.title }}</h6>
+                    </div>
+                    <p class="text-muted small mb-1">
+                        <i class="fa-solid fa-building me-1"></i>{{ ev.company_name }} &bull;
+                        <i class="fa-solid fa-money-bill-wave ms-2 me-1"></i>{{ ev.stipend or 'Stipend Disclosed' }} &bull;
+                        <i class="fa-solid fa-location-dot ms-2 me-1"></i>{{ ev.location or ev.mode }}
+                    </p>
+                    <small class="text-secondary"><i class="fa-regular fa-clock me-1"></i>Deadline: {{ ev.deadline or 'Open' }}</small>
+                    
+                    {% if ev.applied and ev.app_status == 'Shortlisted' and ev.interview_date %}
+                    <div class="mt-1 small text-primary fw-semibold">
+                        <i class="fa-regular fa-calendar-check me-1"></i> Interview: {{ ev.interview_date }} {% if ev.interview_time %}at {{ ev.interview_time }}{% endif %}
+                        {% if ev.interview_venue %}&bull; Venue: {{ ev.interview_venue }}{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mt-2 mt-md-0">
+                    {% if ev.applied %}
+                        <span class="badge {% if ev.app_status == 'Shortlisted' %}bg-primary{% elif ev.app_status == 'Selected' %}bg-success{% else %}bg-secondary{% endif %} px-3 py-2">
+                            <i class="fa-solid fa-check me-1"></i> Applied ({{ ev.app_status }})
+                        </span>
+                    {% else %}
+                        <a href="{{ url_for('student_events') }}#event-{{ ev.id }}" class="btn btn-sm btn-primary">
+                            Apply Now &rarr;
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted small">
+            No active placement drives currently pushed by T&P. Check back soon!
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends "student_base.html" %}
+{% block title %}Internship Progress | T&P Portal{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <h3 class="fw-bold mb-1">Internship Progress & Milestone Tracker</h3>
+    <p class="text-muted mb-0">Follow your internship lifecycle from initial approval to university evaluation and credit clearance.</p>
+</div>
+
+{% if not internship %}
+<div class="alert alert-info">
+    <i class="fa-solid fa-circle-info me-2"></i> No active internship registered. <a href="{{ url_for('student_internship') }}" class="alert-link">Register your internship</a> to begin tracking progress.
+</div>
+{% else %}
+
+<!-- Progress Overview Card -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Overall Completion Status</h5>
+            {% set pct = 20 %}
+            {% if internship.submission_status == 'Submitted' %}{% set pct = 40 %}{% endif %}
+            {% if internship.review_status in ['Approved', 'Ongoing', 'Completed'] %}{% set pct = 60 %}{% endif %}
+            {% if internship.completion_status == 'Uploaded' %}{% set pct = 80 %}{% endif %}
+            {% if internship.review_status == 'Completed' %}{% set pct = 100 %}{% endif %}
+            <span class="fs-5 fw-bold text-primary">{{ pct }}% Complete</span>
+        </div>
+        
+        <div class="progress" style="height: 10px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: {{ pct }}%;"></div>
+        </div>
+
+        <div class="row g-3 mt-3 pt-3 border-top text-center">
+            <div class="col-sm-3">
+                <small class="text-muted d-block">Company</small>
+                <span class="fw-bold">{{ internship.company_name }}</span>
+            </div>
+            <div class="col-sm-3">
+                <small class="text-muted d-block">Current Stage</small>
+                <span class="badge {% if internship.review_status == 'Completed' %}bg-success{% elif internship.review_status == 'Ongoing' %}bg-info text-dark{% elif internship.review_status == 'Approved' %}bg-primary{% elif internship.review_status == 'Correction Required' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                    {{ internship.review_status }}
+                </span>
+            </div>
+            <div class="col-sm-3">
+                <small class="text-muted d-block">Start Date</small>
+                <span class="fw-semibold">{{ internship.start_date or 'TBD' }}</span>
+            </div>
+            <div class="col-sm-3">
+                <small class="text-muted d-block">End Date</small>
+                <span class="fw-semibold">{{ internship.end_date or 'TBD' }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step by Step Visual Roadmap -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-primary me-2"></i>Milestone Lifecycle</h5>
+    </div>
+    <div class="card-body p-4">
+        
+        <!-- Step 1 -->
+        <div class="d-flex mb-4">
+            <div class="me-3 text-center" style="width: 45px;">
+                <span class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+                <div class="vr bg-secondary opacity-25 mt-2" style="height: 40px; width: 2px;"></div>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">Step 1: Internship Information Registered</h6>
+                <p class="text-muted small mb-1">You added {{ internship.company_name }} ({{ internship.role }}) to your internship portal profile.</p>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Completed</span>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="d-flex mb-4">
+            <div class="me-3 text-center" style="width: 45px;">
+                {% if internship.submission_status == 'Submitted' %}
+                    <span class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;"><i class="fa-solid fa-check"></i></span>
+                {% else %}
+                    <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">2</span>
+                {% endif %}
+                <div class="vr bg-secondary opacity-25 mt-2" style="height: 40px; width: 2px;"></div>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">Step 2: Offer Letter & T&P Verification Submission</h6>
+                <p class="text-muted small mb-1">Upload official company letter and submit the record for university verification.</p>
+                {% if internship.submission_status == 'Submitted' %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Submitted on {{ internship.submitted_at }}</span>
+                {% else %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Action Required: Submit for Verification</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="d-flex mb-4">
+            <div class="me-3 text-center" style="width: 45px;">
+                {% if internship.review_status in ['Approved', 'Ongoing', 'Completed'] %}
+                    <span class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;"><i class="fa-solid fa-check"></i></span>
+                {% elif internship.review_status == 'Correction Required' %}
+                    <span class="rounded-circle bg-warning text-dark d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;"><i class="fa-solid fa-exclamation"></i></span>
+                {% else %}
+                    <span class="rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">3</span>
+                {% endif %}
+                <div class="vr bg-secondary opacity-25 mt-2" style="height: 40px; width: 2px;"></div>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">Step 3: Training & Placement Officer Approval</h6>
+                <p class="text-muted small mb-1">T&P section reviews offer validity, role relevance, and approves official academic credit eligibility.</p>
+                {% if internship.review_status in ['Approved', 'Ongoing', 'Completed'] %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Approved</span>
+                {% elif internship.review_status == 'Correction Required' %}
+                    <span class="badge bg-warning text-dark">Correction Required: {{ internship.admin_remarks }}</span>
+                {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary border">Awaiting T&P Verification</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="d-flex mb-4">
+            <div class="me-3 text-center" style="width: 45px;">
+                {% if internship.completion_status == 'Uploaded' and internship.report_status == 'Uploaded' %}
+                    <span class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;"><i class="fa-solid fa-check"></i></span>
+                {% elif internship.completion_status == 'Uploaded' %}
+                    <span class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;"><i class="fa-solid fa-half-stroke"></i></span>
+                {% else %}
+                    <span class="rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">4</span>
+                {% endif %}
+                <div class="vr bg-secondary opacity-25 mt-2" style="height: 40px; width: 2px;"></div>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">Step 4: Completion Letter & Project Report Upload</h6>
+                <p class="text-muted small mb-1">Upload the signed certificate from your employer and your final technical project report.</p>
+                {% if internship.completion_status == 'Uploaded' and internship.report_status == 'Uploaded' %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">All Completion Documents Uploaded</span>
+                {% elif internship.completion_status == 'Uploaded' %}
+                    <span class="badge bg-info-subtle text-info border border-info-subtle">Completion Letter Uploaded (Report Pending)</span>
+                {% else %}
+                    <span class="badge bg-light text-muted border">Pending Upload at End of Term</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="d-flex">
+            <div class="me-3 text-center" style="width: 45px;">
+                {% if internship.review_status == 'Completed' %}
+                    <span class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;"><i class="fa-solid fa-award"></i></span>
+                {% else %}
+                    <span class="rounded-circle bg-light border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">5</span>
+                {% endif %}
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">Step 5: Manager Evaluation & University Final Clearance</h6>
+                <p class="text-muted small mb-1">Evaluation of skills, feedback review, and awarding of academic credits.</p>
+                {% if internship.review_status == 'Completed' %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Internship Completed & Certified</span>
+                {% else %}
+                    <span class="badge bg-light text-muted border">Pending Final Stage</span>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- What Action To Take Next Card -->
+<div class="card shadow-sm border-0 bg-primary-subtle text-primary-emphasis">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-2"><i class="fa-solid fa-compass me-2"></i>What Action Should You Take Next?</h5>
+        {% if internship.submission_status == 'Draft' %}
+            <p class="mb-2">Your internship details are saved as a draft. Please attach your offer letter and click "Submit for T&P Verification".</p>
+            <a href="{{ url_for('student_internship') }}" class="btn btn-primary btn-sm">Submit to T&P Now &rarr;</a>
+        {% elif internship.review_status == 'Correction Required' %}
+            <p class="mb-2">The T&P Officer requested modifications: <em>"{{ internship.admin_remarks }}"</em></p>
+            <a href="{{ url_for('student_internship', edit='1') }}" class="btn btn-warning btn-sm">Edit Details & Resubmit &rarr;</a>
+        {% elif internship.review_status == 'Pending' %}
+            <p class="mb-0">Your record is currently queued for Training & Placement verification. You will receive a notification as soon as the officer completes review.</p>
+        {% elif internship.completion_status != 'Uploaded' %}
+            <p class="mb-2">Your internship is approved! Once your tenure ends, upload your employer completion certificate to trigger final evaluation.</p>
+            <a href="{{ url_for('student_documents') }}" class="btn btn-primary btn-sm">Upload Completion Certificate &rarr;</a>
+        {% elif not internship.feedback_rating %}
+            <p class="mb-0">Documents submitted. Awaiting manager / T&P officer evaluation and final rating.</p>
+        {% else %}
+            <p class="mb-2">All stages completed! You can download your official Internship Clearance & Evaluation summary.</p>
+            <a href="{{ url_for('student_completion') }}" class="btn btn-success btn-sm">View Final Evaluation & Certificate &rarr;</a>
+        {% endif %}
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

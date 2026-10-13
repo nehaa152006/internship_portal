@@ -1,0 +1,208 @@
+{% extends "student_base.html" %}
+{% block title %}My Internship | T&P Portal{% endblock %}
+
+{% block student_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">My Internship Details</h3>
+        <p class="text-muted mb-0">Manage your company details, offer verification, and mentor contact information.</p>
+    </div>
+    {% if internship and not edit_mode %}
+    <div>
+        <a href="{{ url_for('student_internship', edit='1') }}" class="btn btn-outline-primary btn-sm me-2">
+            <i class="fa-solid fa-pen-to-square me-1"></i> Edit Details
+        </a>
+        {% if internship.submission_status == 'Draft' %}
+        <form action="{{ url_for('student_internship_submit') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-paper-plane me-1"></i> Submit for T&P Verification
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% if internship and not edit_mode %}
+<!-- View Existing Internship -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-primary">
+            <i class="fa-solid fa-building me-2"></i>{{ internship.company_name }}
+        </h5>
+        <div>
+            <span class="badge {% if internship.review_status == 'Approved' %}bg-success{% elif internship.review_status == 'Correction Required' %}bg-warning text-dark{% elif internship.review_status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %} fs-6">
+                Status: {{ internship.review_status }}
+            </span>
+            <span class="badge bg-light text-dark border ms-2">
+                {{ internship.submission_status }}
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        {% if internship.review_status == 'Correction Required' and internship.admin_remarks %}
+        <div class="alert alert-warning mb-4">
+            <h6 class="fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>Correction Required by T&P Section:</h6>
+            <p class="mb-2">{{ internship.admin_remarks }}</p>
+            <a href="{{ url_for('student_internship', edit='1') }}" class="btn btn-sm btn-warning">Edit and Resubmit Details</a>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h6 class="text-muted text-uppercase fw-bold small border-bottom pb-2">Role & Domain</h6>
+                <div class="mb-2"><strong>Role / Position:</strong> {{ internship.role or 'Not specified' }}</div>
+                <div class="mb-2"><strong>Domain:</strong> {{ internship.domain or 'General' }}</div>
+                <div class="mb-2"><strong>Mode:</strong> <span class="badge bg-info text-dark">{{ internship.mode or 'Offline' }}</span></div>
+                <div class="mb-2"><strong>Internship Type:</strong> {{ internship.internship_type or 'Paid' }}</div>
+                <div class="mb-2"><strong>Stipend:</strong> {{ internship.stipend or 'N/A' }}</div>
+            </div>
+
+            <div class="col-md-6">
+                <h6 class="text-muted text-uppercase fw-bold small border-bottom pb-2">Company & Timeline</h6>
+                <div class="mb-2"><strong>Company Location:</strong> {{ internship.company_location or 'N/A' }}</div>
+                <div class="mb-2"><strong>Website:</strong> {% if internship.company_website %}<a href="{{ internship.company_website }}" target="_blank">{{ internship.company_website }}</a>{% else %}N/A{% endif %}</div>
+                <div class="mb-2"><strong>Start Date:</strong> {{ internship.start_date or 'TBD' }}</div>
+                <div class="mb-2"><strong>End Date:</strong> {{ internship.end_date or 'TBD' }}</div>
+                <div class="mb-2"><strong>Submitted At:</strong> {{ internship.submitted_at }}</div>
+            </div>
+
+            <div class="col-md-6">
+                <h6 class="text-muted text-uppercase fw-bold small border-bottom pb-2">Manager / Mentor Details</h6>
+                <div class="mb-2"><strong>Name:</strong> {{ internship.manager_name or 'Pending Mentor Assignment' }}</div>
+                <div class="mb-2"><strong>Email:</strong> {{ internship.manager_email or 'Pending' }}</div>
+            </div>
+
+            <div class="col-md-6">
+                <h6 class="text-muted text-uppercase fw-bold small border-bottom pb-2">Offer / Approval Letter</h6>
+                <div class="d-flex align-items-center mt-2">
+                    {% if internship.letter_filename %}
+                        <i class="fa-solid fa-file-pdf text-danger fs-2 me-3"></i>
+                        <div>
+                            <strong>{{ internship.letter_filename }}</strong><br>
+                            <span class="badge bg-success">Status: {{ internship.letter_status }}</span>
+                            <a href="{{ url_for('uploaded_letter', filename=internship.letter_filename) }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fa-solid fa-download me-1"></i> View Letter
+                            </a>
+                        </div>
+                    {% else %}
+                        <span class="text-muted"><i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> No letter uploaded yet.</span>
+                        <a href="{{ url_for('student_documents') }}" class="btn btn-sm btn-primary ms-3">Upload Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Form to Add or Edit Internship -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="fw-bold mb-0">
+            <i class="fa-solid fa-pen-nib text-primary me-2"></i>
+            {% if internship %}Edit Internship Information{% else %}Register New Internship{% endif %}
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('student_internship') }}" enctype="multipart/form-data">
+            {% if internship %}
+            <input type="hidden" name="internship_id" value="{{ internship.id }}">
+            {% endif %}
+
+            <h6 class="fw-bold text-primary mb-3">1. Company & Internship Profile</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Company / Organization Name <span class="text-danger">*</span></label>
+                    <input type="text" name="company_name" class="form-control" placeholder="e.g. Google India, TCS, Infosys, DRDO" value="{{ internship.company_name if internship else '' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Role / Position <span class="text-danger">*</span></label>
+                    <input type="text" name="role" class="form-control" placeholder="e.g. Software Engineer Intern, Data Analyst" value="{{ internship.role if internship else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Domain</label>
+                    <input type="text" name="domain" class="form-control" placeholder="e.g. AI / ML, Web Development, Cloud" value="{{ internship.domain if internship else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Internship Mode</label>
+                    <select name="mode" class="form-select">
+                        <option value="Offline / On-site" {% if internship and internship.mode == 'Offline / On-site' %}selected{% endif %}>Offline / On-site</option>
+                        <option value="Online / Remote" {% if internship and internship.mode == 'Online / Remote' %}selected{% endif %}>Online / Remote</option>
+                        <option value="Hybrid" {% if internship and internship.mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Internship Type</label>
+                    <select name="internship_type" class="form-select">
+                        <option value="Paid" {% if internship and internship.internship_type == 'Paid' %}selected{% endif %}>Paid</option>
+                        <option value="Unpaid" {% if internship and internship.internship_type == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Stipend Amount</label>
+                    <input type="text" name="stipend" class="form-control" placeholder="e.g. ₹25,000 / month or Nil" value="{{ internship.stipend if internship else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Company Location</label>
+                    <input type="text" name="company_location" class="form-control" placeholder="e.g. Hyderabad, Bangalore, Pune" value="{{ internship.company_location if internship else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Company Website</label>
+                    <input type="url" name="company_website" class="form-control" placeholder="https://example.com" value="{{ internship.company_website if internship else '' }}">
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-3">2. Duration & Timeline</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Start Date</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ internship.start_date if internship else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">End Date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ internship.end_date if internship else '' }}">
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-3">3. Industry Mentor / Manager Contact (Optional)</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Manager / Mentor Name</label>
+                    <input type="text" name="manager_name" class="form-control" placeholder="e.g. Jane Doe" value="{{ internship.manager_name if internship else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Manager / Mentor Email</label>
+                    <input type="email" name="manager_email" class="form-control" placeholder="mentor@company.com" value="{{ internship.manager_email if internship else '' }}">
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-primary mb-3">4. Offer / Internship Letter Document</h6>
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Upload Offer Letter / Email Confirmation (PDF or Image)</label>
+                <input type="file" name="letter_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                {% if internship and internship.letter_filename %}
+                <small class="text-success mt-1 d-block"><i class="fa-solid fa-file-check me-1"></i> Current file: {{ internship.letter_filename }} (Upload new file only if replacing)</small>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                {% if internship %}
+                <a href="{{ url_for('student_internship') }}" class="btn btn-outline-secondary">Cancel</a>
+                {% else %}
+                <span></span>
+                {% endif %}
+                <div>
+                    <button type="submit" name="submit_action" value="draft" class="btn btn-outline-primary me-2">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save as Draft
+                    </button>
+                    <button type="submit" name="submit_action" value="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Submit for T&P Verification
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

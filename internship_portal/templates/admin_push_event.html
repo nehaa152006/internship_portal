@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Push New Event / Drive | Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1"><i class="fa-solid fa-bullhorn text-primary me-2"></i>Push New Event / Request</h3>
+                <p class="text-muted mb-0">Publish an internship drive or request visible to all registered students.</p>
+            </div>
+            <a href="{{ url_for('admin_dashboard', tab='events') }}" class="btn btn-outline-secondary btn-sm">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin_push_event') }}">
+                    <h6 class="fw-bold text-primary mb-3">1. Drive & Organization Details</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Event / Drive Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Microsoft IDC Summer Internship 2026" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+                            <select name="event_type" class="form-select">
+                                <option value="Internship Drive" selected>Internship Drive</option>
+                                <option value="Placement Drive">Placement Drive</option>
+                                <option value="T&P Request">T&P Request / Call for Nominations</option>
+                                <option value="Workshop / Hackathon">Workshop / Hackathon</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Company / Organization <span class="text-danger">*</span></label>
+                            <input type="text" name="company_name" class="form-control" placeholder="e.g. Microsoft, Amazon, University R&D" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Role / Position</label>
+                            <input type="text" name="role" class="form-control" placeholder="e.g. Software Engineer Intern">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">2. Criteria & Logistics</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Eligibility Criteria</label>
+                            <input type="text" name="eligibility" class="form-control" placeholder="e.g. 3rd Year B.Tech (CSE/IT/ECE), Min CGPA 7.0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Stipend / Package</label>
+                            <input type="text" name="stipend" class="form-control" placeholder="e.g. ₹80,000 / month or Unpaid">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Mode</label>
+                            <select name="mode" class="form-select">
+                                <option value="On-Campus">On-Campus</option>
+                                <option value="Hybrid" selected>Hybrid</option>
+                                <option value="Remote">Remote</option>
+                                <option value="On-site">On-site</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Location</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Hyderabad / Bangalore">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Application Deadline <span class="text-danger">*</span></label>
+                            <input type="date" name="deadline" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">3. Description & Links</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Job Description & Selection Procedure <span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Mention key responsibilities, interview rounds, and required technical skills..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Official Link / Brochure URL (Optional)</label>
+                            <input type="url" name="link" class="form-control" placeholder="https://careers.company.com/job-id">
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4 p-3 bg-light rounded">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="broadcast_notification" id="broadcastCheck" checked>
+                        <label class="form-check-label fw-semibold" for="broadcastCheck">
+                            <i class="fa-solid fa-bell text-warning me-1"></i> Send instant notification to all registered student portals
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{{ url_for('admin_dashboard', tab='events') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Push Event to Students
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} - Applicants | Admin{% endblock %}
+
+{% block content %}
+<!-- Header Navigation & Drive Overview -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <a href="{{ url_for('admin_dashboard', tab='events') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Drives
+            </a>
+            <span class="badge {% if event.event_type == 'Internship Drive' %}bg-primary{% elif event.event_type == 'T&P Request' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                {{ event.event_type }}
+            </span>
+            <span class="badge {% if event.status == 'Open' %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ event.status }}
+            </span>
+        </div>
+        <h3 class="fw-bold mb-1 text-primary">{{ event.title }}</h3>
+        <p class="text-muted mb-0 small">
+            <i class="fa-solid fa-building me-1"></i><strong>{{ event.company_name }}</strong> &bull; 
+            Role: {{ event.role or 'Intern' }} &bull; 
+            Deadline: {{ event.deadline or 'Open' }}
+        </p>
+    </div>
+    
+    <div class="d-flex gap-2">
+        <form action="{{ url_for('admin_toggle_event_status', event_id=event.id) }}" method="POST">
+            <button type="submit" class="btn btn-sm {% if event.status == 'Open' %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                {% if event.status == 'Open' %}
+                    <i class="fa-solid fa-lock me-1"></i> Close Applications
+                {% else %}
+                    <i class="fa-solid fa-lock-open me-1"></i> Re-open Applications
+                {% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Drive Key Info Strip -->
+<div class="card shadow-sm border-0 mb-4 bg-white">
+    <div class="card-body p-3">
+        <div class="row g-3 small">
+            <div class="col-md-3">
+                <span class="text-muted d-block">Eligibility</span>
+                <strong>{{ event.eligibility or 'All Eligible Branches' }}</strong>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted d-block">Stipend / Package</span>
+                <strong class="text-success">{{ event.stipend or 'Not Disclosed' }}</strong>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted d-block">Mode / Location</span>
+                <strong>{{ event.mode }} ({{ event.location or 'Campus' }})</strong>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted d-block">Total Applicants</span>
+                <span class="badge bg-primary px-3 py-1 fs-6">{{ applications|length }} Students</span>
+            </div>
+        </div>
+        {% if event.description %}
+        <p class="text-muted small mt-3 mb-0 pt-2 border-top">
+            <strong>Job Description:</strong> {{ event.description }}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Applicants List -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0"><i class="fa-solid fa-users text-primary me-2"></i>Candidate Applications ({{ applications|length }})</h5>
+    <span class="text-muted small">Update applicant status and schedule interview date/venue below.</span>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm border rounded">
+        <thead class="table-dark">
+            <tr>
+                <th>Student Details</th>
+                <th>Academic Profile</th>
+                <th>Resume</th>
+                <th>Pitch Note</th>
+                <th>Application Status</th>
+                <th>Interview Schedule</th>
+                <th class="text-end">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>
+                    <strong class="text-dark">{{ app.full_name }}</strong><br>
+                    <small class="text-muted">{{ app.email }}</small><br>
+                    {% if app.phone %}<small class="text-secondary"><i class="fa-solid fa-phone me-1"></i>{{ app.phone }}</small>{% endif %}
+                </td>
+                <td>
+                    <div>Roll: <strong>{{ app.roll_number or '-' }}</strong></div>
+                    <small class="text-muted">{{ app.branch or '-' }}</small><br>
+                    {% if app.cgpa %}<span class="badge bg-light text-dark border">CGPA: {{ app.cgpa }}</span>{% endif %}
+                </td>
+                <td>
+                    {% if app.resume_filename %}
+                        <a href="{{ url_for('uploaded_resume', filename=app.resume_filename) }}" target="_blank" class="btn btn-sm btn-outline-danger text-nowrap">
+                            <i class="fa-solid fa-file-pdf me-1"></i> View Resume
+                        </a>
+                    {% else %}
+                        <span class="text-muted small">No Resume</span>
+                    {% endif %}
+                </td>
+                <td style="max-width: 180px;">
+                    <small class="text-secondary text-break">{{ app.student_note or 'No custom note attached.' }}</small>
+                </td>
+                <td>
+                    {% if app.status == 'Shortlisted' %}
+                        <span class="badge bg-primary text-white px-2 py-1"><i class="fa-solid fa-star me-1"></i>Shortlisted</span>
+                    {% elif app.status == 'Selected' %}
+                        <span class="badge bg-success text-white px-2 py-1"><i class="fa-solid fa-check me-1"></i>Selected</span>
+                    {% elif app.status == 'Under Review' %}
+                        <span class="badge bg-info text-dark px-2 py-1">Under Review</span>
+                    {% elif app.status == 'Rejected' %}
+                        <span class="badge bg-danger text-white px-2 py-1">Rejected</span>
+                    {% else %}
+                        <span class="badge bg-secondary text-white px-2 py-1">Applied</span>
+                    {% endif %}
+                    
+                    {% if app.admin_notes %}
+                    <small class="d-block text-muted mt-1 fst-italic">Note: {{ app.admin_notes }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if app.status == 'Shortlisted' and app.interview_date %}
+                        <div class="small p-2 bg-light rounded border border-primary-subtle">
+                            <div><i class="fa-regular fa-calendar text-primary me-1"></i><strong>{{ app.interview_date }}</strong> {% if app.interview_time %}&bull; {{ app.interview_time }}{% endif %}</div>
+                            <div class="text-truncate" style="max-width: 200px;" title="{{ app.interview_venue }}">
+                                <i class="fa-solid fa-location-dot text-danger me-1"></i>{{ app.interview_venue or 'Venue TBD' }}
+                            </div>
+                        </div>
+                    {% elif app.status == 'Shortlisted' %}
+                        <span class="badge bg-warning text-dark"><i class="fa-regular fa-clock me-1"></i>Interview Not Scheduled</span>
+                    {% else %}
+                        <span class="text-muted small">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-primary text-nowrap" data-bs-toggle="modal" data-bs-target="#scheduleModal-{{ app.id }}">
+                        <i class="fa-solid fa-calendar-check me-1"></i> Update & Schedule
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Modal for updating status & scheduling interview -->
+            <div class="modal fade" id="scheduleModal-{{ app.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ app.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form action="{{ url_for('admin_update_application_status', application_id=app.id) }}" method="POST">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold" id="modalLabel-{{ app.id }}">
+                                    Review & Schedule: {{ app.full_name }}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="small text-muted mb-3">
+                                    Candidate: <strong>{{ app.full_name }}</strong> (Roll: {{ app.roll_number or 'N/A' }} &bull; CGPA: {{ app.cgpa or 'N/A' }})
+                                </p>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Application Status <span class="text-danger">*</span></label>
+                                    <select name="status" class="form-select form-select-sm" id="statusSelect-{{ app.id }}">
+                                        <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                                        <option value="Under Review" {% if app.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                                        <option value="Shortlisted" {% if app.status == 'Shortlisted' %}selected{% endif %}>Shortlisted (Schedule Interview)</option>
+                                        <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected / Offer Issued</option>
+                                        <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                </div>
+
+                                <!-- Interview Details Section -->
+                                <div class="p-3 bg-light rounded border mb-3">
+                                    <h6 class="fw-bold small text-primary mb-2">
+                                        <i class="fa-regular fa-calendar-check me-1"></i>Interview Details (When & Where)
+                                    </h6>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label small mb-1">Interview Date</label>
+                                            <input type="date" name="interview_date" class="form-control form-control-sm" value="{{ app.interview_date or '' }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small mb-1">Interview Time</label>
+                                            <input type="text" name="interview_time" class="form-control form-control-sm" placeholder="e.g. 10:30 AM" value="{{ app.interview_time or '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-1">Venue / Online Link <span class="text-muted">(Where the interview is held)</span></label>
+                                        <input type="text" name="interview_venue" class="form-control form-control-sm" placeholder="e.g. Placement Cell Room 302, or https://meet.google.com/xyz" value="{{ app.interview_venue or '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="form-label small mb-1">Instructions for Student</label>
+                                        <textarea name="interview_instructions" class="form-control form-control-sm" rows="2" placeholder="e.g. Carry 2 copies of resume, College ID, and laptop for live coding round.">{{ app.interview_instructions or '' }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Officer Remarks (Optional)</label>
+                                    <input type="text" name="admin_notes" class="form-control form-control-sm" placeholder="Feedback or remarks..." value="{{ app.admin_notes or '' }}">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> Save & Send Notification
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center text-muted p-5">
+                    <i class="fa-solid fa-inbox fs-2 mb-2 d-block text-secondary"></i>
+                    No students have applied to this drive yet.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

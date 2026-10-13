@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard | T&P Portal{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-graduation-cap text-primary me-2"></i>T&P Admin Control Center</h3>
+        <p class="text-muted mb-0">Manage university internship approvals, manager evaluations, and publish drives for students.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_push_event') }}" class="btn btn-primary">
+            <i class="fa-solid fa-bullhorn me-1"></i> Push New Event / Drive
+        </a>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-pills mb-4 bg-white p-2 rounded shadow-sm">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab != 'events' %}active{% endif %} fw-semibold" href="{{ url_for('admin_dashboard', tab='verifications') }}">
+            <i class="fa-solid fa-list-check me-2"></i>Internship Verifications
+            <span class="badge {% if active_tab != 'events' %}bg-light text-dark{% else %}bg-primary{% endif %} ms-1">{{ stats.total }}</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'events' %}active{% endif %} fw-semibold" href="{{ url_for('admin_dashboard', tab='events') }}">
+            <i class="fa-solid fa-bullhorn me-2"></i>Pushed Events & Drives
+            <span class="badge {% if active_tab == 'events' %}bg-light text-dark{% else %}bg-primary{% endif %} ms-1">{{ events|length }}</span>
+        </a>
+    </li>
+</ul>
+
+{% if active_tab == 'events' %}
+<!-- TAB 2: PUSHED EVENTS & DRIVES -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">Published Drives & Student Opportunities</h5>
+    <a href="{{ url_for('admin_push_event') }}" class="btn btn-sm btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Push Another Event
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for ev in events %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge {% if ev.event_type == 'Internship Drive' %}bg-primary{% elif ev.event_type == 'T&P Request' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                        {{ ev.event_type }}
+                    </span>
+                    <span class="badge {% if ev.status == 'Open' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ ev.status }}
+                    </span>
+                </div>
+                <h5 class="fw-bold text-primary mb-1">{{ ev.title }}</h5>
+                <h6 class="text-muted small mb-2"><i class="fa-solid fa-building me-1"></i>{{ ev.company_name }}</h6>
+                
+                <p class="text-secondary small mb-3 text-truncate">{{ ev.description }}</p>
+                
+                <div class="mt-auto border-top pt-3 small">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Deadline:</span>
+                        <span class="fw-semibold text-danger">{{ ev.deadline or 'Rolling' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Applicants:</span>
+                        <span class="badge bg-primary fs-7">{{ ev.applicant_count }} Students</span>
+                    </div>
+                    
+                    <a href="{{ url_for('admin_event_detail', event_id=ev.id) }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fa-solid fa-users me-1"></i> View & Manage Applicants &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center p-5 bg-white rounded shadow-sm border-0">
+        <i class="fa-solid fa-bullhorn text-muted fs-1 mb-3"></i>
+        <h5>No Events Pushed Yet</h5>
+        <p class="text-muted">Push an internship drive or request to let students apply.</p>
+        <a href="{{ url_for('admin_push_event') }}" class="btn btn-primary">Push First Event</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- TAB 1: INTERNSHIP VERIFICATIONS (ORIGINAL TABLE WITH STATS & FILTERS) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm border-0"><div class="card-body">
+            <h2 class="mb-0 fw-bold">{{ stats.total }}</h2><small class="text-muted">Total Records</small>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm border-0"><div class="card-body">
+            <h2 class="mb-0 text-success fw-bold">{{ stats.submitted }}</h2><small class="text-muted">Letters Submitted</small>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm border-0"><div class="card-body">
+            <h2 class="mb-0 text-warning fw-bold">{{ stats.pending }}</h2><small class="text-muted">Letters Pending</small>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm border-0"><div class="card-body">
+            <h2 class="mb-0 text-primary fw-bold">{{ stats.completed }}</h2><small class="text-muted">Completions Uploaded</small>
+        </div></div>
+    </div>
+</div>
+
+<div class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="btn-group">
+        <a href="{{ url_for('admin_dashboard', status='All', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='All' }}">All</a>
+        <a href="{{ url_for('admin_dashboard', status='Pending', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Pending' }}">Pending</a>
+        <a href="{{ url_for('admin_dashboard', status='Under Review', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Under Review' }}">Under Review</a>
+        <a href="{{ url_for('admin_dashboard', status='Approved', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Approved' }}">Approved</a>
+        <a href="{{ url_for('admin_dashboard', status='Ongoing', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Ongoing' }}">Ongoing</a>
+        <a href="{{ url_for('admin_dashboard', status='Completed', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Completed' }}">Completed</a>
+        <a href="{{ url_for('admin_dashboard', status='Correction Required', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Correction Required' }}">Correction Req.</a>
+        <a href="{{ url_for('admin_dashboard', status='Rejected', search=search_query) }}" class="btn btn-sm btn-outline-secondary {{ 'active' if status_filter=='Rejected' }}">Rejected</a>
+    </div>
+    <form class="d-flex" method="GET" action="{{ url_for('admin_dashboard') }}">
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="text" name="search" class="form-control form-control-sm me-2" placeholder="Search student, dept, company..." value="{{ search_query }}">
+        <button class="btn btn-sm btn-primary" type="submit">Search</button>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm border rounded">
+        <thead class="table-dark">
+            <tr>
+                <th>Student</th>
+                <th>Roll No. & Dept</th>
+                <th>Company & Role</th>
+                <th>Offer Letter</th>
+                <th>Completion</th>
+                <th>Review Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in records %}
+            <tr>
+                <td>{{ r.full_name }}<br><small class="text-muted">{{ r.email }}</small></td>
+                <td><strong>{{ r.roll_number or '-' }}</strong><br><small class="text-muted">{{ r.branch or '-' }}</small></td>
+                <td><strong>{{ r.company_name }}</strong><br><small class="text-muted">{{ r.role or '-' }}</small></td>
+                <td>
+                    {% if r.letter_status == 'Submitted' %}<span class="badge bg-success">Submitted</span>
+                    {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                </td>
+                <td>
+                    {% if r.completion_status == 'Uploaded' %}<span class="badge bg-success">Uploaded</span>
+                    {% else %}<span class="badge bg-secondary">Not Uploaded</span>{% endif %}
+                </td>
+                <td>
+                    {% if r.review_status == 'Approved' %}<span class="badge bg-success">Approved</span>
+                    {% elif r.review_status == 'Ongoing' %}<span class="badge bg-info text-dark">Ongoing</span>
+                    {% elif r.review_status == 'Completed' %}<span class="badge bg-primary">Completed</span>
+                    {% elif r.review_status == 'Correction Required' %}<span class="badge bg-warning text-dark">Correction Required</span>
+                    {% elif r.review_status == 'Rejected' %}<span class="badge bg-danger">Rejected</span>
+                    {% elif r.review_status == 'Under Review' %}<span class="badge bg-secondary">Under Review</span>
+                    {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                </td>
+                <td><a href="{{ url_for('view_internship', internship_id=r.id) }}" class="btn btn-sm btn-outline-primary">Review / Evaluate</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center text-muted p-4">No records found matching criteria.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

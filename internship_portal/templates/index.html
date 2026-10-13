@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}University Training & Placement Portal{% endblock %}
+
+{% block content %}
+<div class="py-5 text-center">
+    <div class="d-inline-flex p-3 rounded-circle bg-primary-subtle text-primary mb-3">
+        <i class="fa-solid fa-graduation-cap fa-2x"></i>
+    </div>
+    <h1 class="fw-bold tracking-tight mb-2 text-dark">University Training & Placement Portal</h1>
+    <p class="lead text-muted col-md-7 mx-auto mb-4" style="font-size: 1.1rem;">
+        Centralized portal for students and T&P officers to manage internship approvals, track supervisor evaluations, and participate in campus drives.
+    </p>
+    
+    <div class="d-flex justify-content-center gap-2 mb-5">
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4">
+            <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+        </a>
+        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-4">
+            <i class="fa-solid fa-user-plus me-2"></i>Student Registration
+        </a>
+    </div>
+
+    <!-- 4 Minimalist Feature Columns -->
+    <div class="row g-4 text-start">
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-primary fs-3 mb-3"><i class="fa-solid fa-file-contract"></i></div>
+                    <h6 class="fw-bold mb-2">Offer Verification</h6>
+                    <p class="text-muted small mb-0">Upload internship offer letters and track official university verification and approvals.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-success fs-3 mb-3"><i class="fa-solid fa-bullhorn"></i></div>
+                    <h6 class="fw-bold mb-2">Campus Drives & Requests</h6>
+                    <p class="text-muted small mb-0">Browse drives pushed by T&P, apply with resume, and receive interview dates & venues.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-warning fs-3 mb-3"><i class="fa-solid fa-comment-dots"></i></div>
+                    <h6 class="fw-bold mb-2">Supervisor Feedback</h6>
+                    <p class="text-muted small mb-0">Record industry mentor feedback, 5-skill competency ratings, and performance remarks.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-info fs-3 mb-3"><i class="fa-solid fa-award"></i></div>
+                    <h6 class="fw-bold mb-2">Academic Clearance</h6>
+                    <p class="text-muted small mb-0">Download signed university internship completion records and academic credit certificates.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Accounts Callout -->
+    <div class="mt-5 p-3 bg-white border rounded shadow-sm text-center d-inline-block small text-muted">
+        <span class="fw-bold text-dark"><i class="fa-solid fa-key me-1 text-primary"></i>Demo Credentials:</span>
+        <span class="ms-2">Student: <code>student@demo.com</code> / <code>student123</code></span>
+        <span class="mx-2">&bull;</span>
+        <span>Admin: <code>admin@university.edu</code> / <code>admin123</code></span>
+    </div>
+</div>
+{% endblock %}

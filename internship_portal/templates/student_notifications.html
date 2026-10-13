@@ -1,0 +1,48 @@
+{% extends "student_base.html" %}
+{% block title %}Notifications | T&P Portal{% endblock %}
+
+{% block student_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Notifications & Broadcasts</h3>
+        <p class="text-muted mb-0">Stay informed about your internship status updates, new drives, and reminders.</p>
+    </div>
+    {% if notifications %}
+    <form action="{{ url_for('student_mark_notifications_read') }}" method="POST">
+        <button type="submit" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-check-double me-1"></i> Mark All as Read
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if notifications %}
+        <div class="list-group list-group-flush">
+            {% for n in notifications %}
+            <div class="list-group-item p-3 {% if not n.is_read %}bg-light border-start border-primary border-4{% endif %}">
+                <div class="d-flex align-items-start">
+                    <div class="rounded-circle {% if not n.is_read %}bg-primary text-white{% else %}bg-secondary-subtle text-secondary{% endif %} p-2 me-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <p class="mb-1 text-dark {% if not n.is_read %}fw-semibold{% endif %}">{{ n.message }}</p>
+                            <small class="text-muted ms-2 text-nowrap"><i class="fa-regular fa-clock me-1"></i>{{ n.created_at }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="fa-solid fa-bell-slash fs-1 mb-3 text-secondary"></i>
+            <h5 class="fw-bold">No Notifications</h5>
+            <p class="small mb-0">You're all caught up! You will be notified whenever T&P reviews your records or pushes new opportunities.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
